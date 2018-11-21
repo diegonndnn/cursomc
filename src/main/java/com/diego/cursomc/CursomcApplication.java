@@ -1,5 +1,6 @@
 package com.diego.cursomc;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,20 @@ import com.diego.cursomc.domain.Cidade;
 import com.diego.cursomc.domain.Cliente;
 import com.diego.cursomc.domain.Endereco;
 import com.diego.cursomc.domain.Estado;
+import com.diego.cursomc.domain.Pagamento;
+import com.diego.cursomc.domain.PagamentoComBoleto;
+import com.diego.cursomc.domain.PagamentoComCartao;
+import com.diego.cursomc.domain.Pedido;
 import com.diego.cursomc.domain.Produto;
+import com.diego.cursomc.domain.enums.EstadoPagamento;
 import com.diego.cursomc.domain.enums.TipoCliente;
 import com.diego.cursomc.repositories.CategoriaRepository;
 import com.diego.cursomc.repositories.CidadeRepository;
 import com.diego.cursomc.repositories.ClienteRepository;
 import com.diego.cursomc.repositories.EnderecoRepository;
 import com.diego.cursomc.repositories.EstadoRepository;
+import com.diego.cursomc.repositories.PagamentoRepository;
+import com.diego.cursomc.repositories.PedidoRepository;
 import com.diego.cursomc.repositories.ProdutoRepository;
 
 @SpringBootApplication
@@ -37,10 +45,18 @@ public class CursomcApplication implements CommandLineRunner {
 
 	@Autowired
 	private ClienteRepository clienteRepository;
-	
+
 	@Autowired
 	private EnderecoRepository enderecoRepository;
-	
+
+	@Autowired
+	private PedidoRepository pedidoRepository;
+
+	@Autowired
+	private PagamentoRepository pagamentoRepository;
+
+	SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
 	public static void main(String[] args) {
 		SpringApplication.run(CursomcApplication.class, args);
 	}
@@ -85,11 +101,21 @@ public class CursomcApplication implements CommandLineRunner {
 		Endereco e2 = new Endereco(null, "Avenida Matos", "105", "Sala 800", "Centro", "38777012", cli1, c2);
 
 		cli1.getEnderecos().addAll(Arrays.asList(e1, e2));
-		
+
 		clienteRepository.saveAll(Arrays.asList(cli1));
-		enderecoRepository.saveAll(Arrays.asList(e1,e2));
-		
-		
+		enderecoRepository.saveAll(Arrays.asList(e1, e2));
+
+		Pedido ped1 = new Pedido(null, sdf.parse("21/11/2016 14:30"), cli1, e1);
+		Pedido ped2 = new Pedido(null, sdf.parse("21/11/2016 15:00"), cli1, e2);
+		Pagamento pagto1 = new PagamentoComCartao(null, EstadoPagamento.QUITADO, ped1, 6);
+		ped1.setPagamento(pagto1);
+		Pagamento pagto2 = new PagamentoComBoleto(null, EstadoPagamento.PENDENTE, ped2, sdf.parse("22/11/2016 15:00"),
+				null);
+		ped2.setPagamento(pagto2);
+		cli1.getPedidos().addAll(Arrays.asList(ped1, ped2));
+
+		pedidoRepository.saveAll(Arrays.asList(ped1, ped2));
+		pagamentoRepository.saveAll(Arrays.asList(pagto1, pagto2));
 
 	}
 
